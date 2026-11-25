@@ -1,0 +1,44 @@
+{
+ "pizza_margherita": {
+  "arquivo": "Margherita Originale.JPG",
+  "autor": "Mario56",
+  "licenca": "CC BY-SA 3.0",
+  "licenca_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "pagina": "https://commons.wikimedia.org/wiki/File:Margherita_Originale.JPG"
+ },
+ "combinado_salmao": {
+  "arquivo": "Salmon nigiri sushi.jpg",
+  "autor": "Alpha from Melbourne, Australia",
+  "licenca": "CC BY-SA 2.0",
+  "licenca_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "pagina": "https://commons.wikimedia.org/wiki/File:Salmon_nigiri_sushi.jpg"
+ },
+ "picanha_completa": {
+  "arquivo": "Brazilian lunch, 2012.jpg",
+  "autor": "Sebástian Freire",
+  "licenca": "CC BY-SA 2.0",
+  "licenca_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "pagina": "https://commons.wikimedia.org/wiki/File:Brazilian_lunch,_2012.jpg"
+ },
+ "burger_da_casa": {
+  "arquivo": "Cheeseburger with fries - Massachusetts.jpg",
+  "autor": "Daderot",
+  "licenca": "CC0",
+  "licenca_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "pagina": "https://commons.wikimedia.org/wiki/File:Cheeseburger_with_fries_-_Massachusetts.jpg"
+ },
+ "pudim_de_leite": {
+  "arquivo": "Pudim de leite (3544235183).jpg",
+  "autor": "Marcelo Träsel from Porto Alegre, Brasil",
+  "licenca": "CC BY-SA 2.0",
+  "licenca_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "pagina": "https://commons.wikimedia.org/wiki/File:Pudim_de_leite_(3544235183).jpg"
+ },
+ "acai_na_tigela": {
+  "arquivo": "Acai bowl - Açaí na tigela.jpg",
+  "autor": "chahayes",
+  "licenca": "CC BY 2.0",
+  "licenca_url": "https://creativecommons.org/licenses/by/2.0",
+  "pagina": "https://commons.wikimedia.org/wiki/File:Acai_bowl_-_A%C3%A7a%C3%AD_na_tigela.jpg"
+ }
+}

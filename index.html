@@ -67,9 +67,11 @@ model-viewer { width: 100%; height: clamp(300px, 52vh, 520px); background: radia
 .dish[aria-current="true"] { background: var(--surface); box-shadow: inset 3px 0 0 var(--saffron) }
 .dish img { grid-row: 1 / span 2; grid-column: 1; width: 84px; height: 84px; object-fit: cover; border-radius: 12px; background: var(--stage) }
 .dish .n { font: 600 17px/1.3 var(--body); grid-column: 2 }
+.thumb3d { grid-row: 1 / span 2; grid-column: 1; width: 84px; height: 84px; border-radius: 12px; background: var(--stage); display: grid; place-items: center; font: 700 18px/1 var(--display); color: var(--accent) }
+.view-toggle button:disabled { opacity: .4; cursor: default }
 .dish .d { color: var(--muted); font-size: 14px; grid-column: 2 / span 2 }
 .dish .p { font-weight: 600; font-variant-numeric: tabular-nums; grid-row: 1; grid-column: 3 }
-@media (max-width: 420px) { .dish { grid-template-columns: 68px minmax(0, 1fr) auto } .dish img { width: 68px; height: 68px } }
+@media (max-width: 420px) { .dish { grid-template-columns: 68px minmax(0, 1fr) auto } .dish img, .thumb3d { width: 68px; height: 68px } }
 .creditos { margin-top: 10px; font-size: 12px } .creditos a { color: inherit }
 .creditos summary { cursor: pointer }
 .creditos ul { margin: 8px 0 0; padding-left: 18px }
@@ -134,19 +136,17 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted) }
 
 <script>
 const PRATOS = [
-  { id: 'pizza_margherita', cat: 'Para dividir', nome: 'Pizza Margherita', preco: 79, desc: 'Massa de fermentação natural, molho de tomate pelado, mussarela de búfala e manjericão. Serve 2 a 3 pessoas.', medida: 'Ø 35 cm · tábua Ø 38 cm' },
+  { id: 'costelao_12h', cat: 'Para dividir', nome: 'Costelão 12 horas', preco: 189, desc: 'Costela bovina assada lentamente por 12 horas, servida na chapa com tomate-cereja e cebola roxa. Acompanha arroz colorido, batata frita e molho da casa.', medida: 'chapa 30 × 24 cm · tábua 40 × 30 cm' },
   { id: 'combinado_salmao', cat: 'Para dividir', nome: 'Combinado de Salmão', preco: 68, desc: '4 nigiris e 6 hossomakis de salmão, gengibre e wasabi. 10 peças.', medida: '34 × 15 cm' },
   { id: 'picanha_completa', cat: 'Pratos principais', nome: 'Picanha na Brasa', preco: 74, desc: 'Picanha na brasa, arroz soltinho, feijão, farofa da casa e vinagrete.', medida: 'prato Ø 28 cm' },
   { id: 'burger_da_casa', cat: 'Pratos principais', nome: 'Burger da Casa', preco: 46, desc: 'Blend de 180 g, queijo derretido, alface, tomate e cebola roxa. Acompanha fritas.', medida: 'Ø 12 cm · altura 10 cm' },
-  { id: 'pudim_de_leite', cat: 'Sobremesas', nome: 'Pudim de Leite', preco: 24, desc: 'Receita da avó, com calda de caramelo. Inteiro serve 6 fatias.', medida: 'Ø 17 cm · altura 6 cm' },
+  { id: 'petit_gateau', cat: 'Sobremesas', nome: 'Petit Gateau', preco: 32, desc: 'Bolinho de chocolate com recheio cremoso, servido quente com sorvete de creme e calda de chocolate.', medida: 'prato Ø 26 cm', semFoto: true },
   { id: 'acai_na_tigela', cat: 'Sobremesas', nome: 'Açaí na Tigela', preco: 28, desc: '500 ml de açaí batido na hora, com banana e granola.', medida: 'tigela Ø 15 cm' },
 ];
 const CREDITOS = {
-  pizza_margherita: ['Mario56', 'CC BY-SA 3.0', 'https://commons.wikimedia.org/wiki/File:Margherita_Originale.JPG'],
   combinado_salmao: ['Alpha from Melbourne, Australia', 'CC BY-SA 2.0', 'https://commons.wikimedia.org/wiki/File:Salmon_nigiri_sushi.jpg'],
   picanha_completa: ['Sebástian Freire', 'CC BY-SA 2.0', 'https://commons.wikimedia.org/wiki/File:Brazilian_lunch,_2012.jpg'],
   burger_da_casa: ['Daderot', 'CC0', 'https://commons.wikimedia.org/wiki/File:Cheeseburger_with_fries_-_Massachusetts.jpg'],
-  pudim_de_leite: ['Marcelo Träsel', 'CC BY-SA 2.0', 'https://commons.wikimedia.org/wiki/File:Pudim_de_leite_(3544235183).jpg'],
   acai_na_tigela: ['chahayes', 'CC BY 2.0', 'https://commons.wikimedia.org/wiki/File:Acai_bowl_-_A%C3%A7a%C3%AD_na_tigela.jpg'],
 };
 const foto = id => 'fotos/' + id + '.jpg';
@@ -172,7 +172,8 @@ function renderMenu() {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'dish'; b.id = 'prato-' + p.id;
       b.setAttribute('aria-current', String(p.id === atual));
       b.innerHTML = `<img loading="lazy" alt=""><span class="n"></span><span class="p"></span><span class="d"></span>`;
-      b.querySelector('img').src = foto(p.id); b.querySelector('.n').textContent = p.nome; b.querySelector('.p').textContent = brl(p.preco); b.querySelector('.d').textContent = p.desc;
+      if (p.semFoto) b.querySelector('img').replaceWith(Object.assign(document.createElement('span'), { className: 'thumb3d', textContent: '3D' }));
+      else b.querySelector('img').src = foto(p.id); b.querySelector('.n').textContent = p.nome; b.querySelector('.p').textContent = brl(p.preco); b.querySelector('.d').textContent = p.desc;
       b.onclick = () => { selecionar(p.id); if (innerWidth < 900) document.querySelector('.stage-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
       l.appendChild(b);
     });
@@ -194,7 +195,9 @@ function carregarModelo(id) {
 function selecionar(id) {
   atual = id; const p = PRATOS.find(x => x.id === id);
   carregarModelo(p.id).then(u => { if (atual === id) mv.src = u; }); mv.alt = 'Modelo 3D: ' + p.nome;
-  const img = document.getElementById('foto'); img.src = foto(p.id); img.alt = 'Foto: ' + p.nome;
+  const img = document.getElementById('foto'); if (!p.semFoto) { img.src = foto(p.id); img.alt = 'Foto: ' + p.nome; }
+  document.getElementById('vFoto').disabled = !!p.semFoto;
+  mostrar(p.semFoto ? '3d' : 'foto');
   document.getElementById('tName').textContent = p.nome;
   document.getElementById('tPrice').textContent = brl(p.preco);
   document.getElementById('tDesc').textContent = p.desc;
@@ -218,7 +221,7 @@ document.getElementById('vFoto').onclick = () => mostrar('foto');
 document.getElementById('v3d').onclick = () => mostrar('3d');
 document.getElementById('go3d').onclick = () => mostrar('3d');
 const ul = document.getElementById('creditos');
-PRATOS.forEach(p => { const [autor, lic, url] = CREDITOS[p.id]; const li = document.createElement('li');
+PRATOS.filter(p => CREDITOS[p.id]).forEach(p => { const [autor, lic, url] = CREDITOS[p.id]; const li = document.createElement('li');
   const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = autor;
   li.append(p.nome + ': foto de ', a, ', ' + lic + ', via Wikimedia Commons'); ul.appendChild(li); });
 renderTabs(); renderMenu();

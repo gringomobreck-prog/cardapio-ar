@@ -295,12 +295,127 @@ def acai():
         out.append(ellip(0.0035, 0.0018, 0.003, 'leite_cond', (x, 0.0735, 0.012 * math.sin(x * 90)), la=6, lo=8))
     return out
 
-PRATOS = dict(pizza_margherita=pizza, burger_da_casa=burger, picanha_completa=picanha,
+def normais(m):
+    """Recalcula normais suaves a partir das faces (para malhas deformadas)."""
+    P = m.P.astype(float); I = m.I.reshape(-1, 3); N = np.zeros_like(P)
+    fn = np.cross(P[I[:, 1]] - P[I[:, 0]], P[I[:, 2]] - P[I[:, 0]])
+    for k in range(3): np.add.at(N, I[:, k], fn)
+    N /= np.linalg.norm(N, axis=1, keepdims=True) + 1e-12
+    m.N = N.astype(np.float32); return m
+
+def bloco_arredondado(sx, sy, sz, m, e=0.28, at=(0, 0, 0), rot=(0, 0, 0), la=24, lo=36):
+    """Superelipsoide: um bloco de cantos arredondados (e menor = mais quadrado)."""
+    b = sphere(m, la, lo); P = b.P.astype(float)
+    P = np.sign(P) * np.abs(P) ** e
+    b.P = P.astype(np.float32)
+    return normais(b).xf((sx / 2, sy / 2, sz / 2), rot, at)
+
+def costelao():
+    """Costelão 12 horas na chapa de ferro sobre tábua, com arroz, molho e fritas."""
+    r = np.random.default_rng(12)
+    mat('ferro', '#232323', 0.55, 0.35); mat('casca', '#8a4413', 0.28); mat('casca_escura', '#5a2a0c', 0.35)
+    mat('carne_lado', '#4b2414', 0.55); mat('osso', '#e7dcc4', 0.55); mat('alecrim', '#4f7a3a', 0.6)
+    mat('tomate_cereja', '#d81e12', 0.18); mat('cebola_roxa', '#9b4a68', 0.35)
+    mat('arroz', '#f2ead2', 0.9); mat('legume_cenoura', '#e8892b', 0.5); mat('legume_milho', '#f1c232', 0.5)
+    mat('legume_ervilha', '#5c9a3a', 0.5); mat('azeitona', '#2a2626', 0.4); mat('molho_escuro', '#2e1408', 0.12)
+    mat('batata', '#eab64e', 0.7); mat('papel', '#e9e7e1', 0.85); mat('porcelana', '#f4f3ef', 0.22)
+    out = []
+    # tábua e chapa de ferro (30 x 24 cm)
+    out.append(box('madeira').xf((0.40, 0.022, 0.30), t=(0, 0.011, 0)))
+    y = 0.022
+    out.append(box('ferro').xf((0.30, 0.008, 0.24), t=(0, y + 0.004, 0)))
+    for (sx, sz, x, z) in ((0.30, 0.008, 0, 0.116), (0.30, 0.008, 0, -0.116), (0.008, 0.24, 0.146, 0), (0.008, 0.24, -0.146, 0)):
+        out.append(box('ferro').xf((sx, 0.02, sz), t=(x, y + 0.01, z)))
+    y += 0.008
+    # costela: bloco de ~22 x 15 cm, 9 cm de altura, levemente girado
+    giro = math.radians(-12)
+    out.append(jitter(bloco_arredondado(0.215, 0.085, 0.145, 'casca', 0.32, (-0.01, y + 0.0425, 0.0), (0, giro, 0)), 0.0012))
+    out.append(bloco_arredondado(0.20, 0.03, 0.13, 'carne_lado', 0.3, (-0.004, y + 0.013, 0.008), (0, giro, 0)))
+    for _ in range(18):  # partes mais tostadas
+        a = r.uniform(-0.09, 0.08); b = r.uniform(-0.055, 0.055)
+        x = a * math.cos(giro) + b * math.sin(giro); z = -a * math.sin(giro) + b * math.cos(giro)
+        out.append(ellip(r.uniform(.008, .016), .003, r.uniform(.006, .012), 'casca_escura', (x - 0.01, y + 0.0855, z), (0, r.uniform(0, 3), 0), 6, 10))
+    # 4 ossos saindo pela lateral (lado +x, como na foto)
+    for i, (dz, h) in enumerate(((-0.05, 0.018), (-0.015, 0.03), (0.02, 0.04), (0.055, 0.03))):
+        L = 0.075 + 0.01 * (i % 2)
+        bx = 0.09 * math.cos(giro) + dz * math.sin(giro) - 0.01; bz = -0.09 * math.sin(giro) + dz * math.cos(giro)
+        osso = lathe([(0, 0), (0.013, 0), (0.0145, 0.004), (0.0135, L - 0.004), (0.011, L), (0, L)], 'osso', 20)
+        out.append(osso.xf((1, 1, 0.75), (0, giro, -math.pi / 2), (bx, y + h, bz)))
+    # alecrim por cima
+    for k in range(5):
+        out.append(ellip(0.035, 0.0025, 0.0028, 'alecrim', (-0.02 + k * 0.004, y + 0.088, -0.01 + k * 0.006), (0, giro + 0.35 * (k - 2), 0), 5, 8))
+        for j in range(8):
+            t = (j - 3.5) * 0.008
+            out.append(ellip(0.006, 0.0012, 0.0012, 'alecrim', (-0.02 + k * 0.004 + t * math.cos(giro + 0.35 * (k - 2)), y + 0.0895, -0.01 + k * 0.006 - t * math.sin(giro + 0.35 * (k - 2))), (0, r.uniform(0, 3), 0), 4, 6))
+    # tomates-cereja na frente da chapa e cebola roxa atrás
+    for k in range(7):
+        out.append(ellip(0.012, 0.011, 0.012, 'tomate_cereja', (-0.03 + k * 0.025 + r.uniform(-.004, .004), y + 0.011, 0.095 - (k % 2) * 0.012)))
+    for _ in range(10):
+        out.append(ellip(0.012, 0.004, 0.006, 'cebola_roxa', (-0.12 + r.uniform(0, 0.04), y + 0.006 + r.uniform(0, .006), -0.09 + r.uniform(0, 0.03)), (r.uniform(0, 1), r.uniform(0, 3), 0), 6, 10))
+    # tigela de arroz colorido (atrás, fora da tábua)
+    tig = [(0, 0), (0.035, 0), (0.037, 0.005), (0.06, 0.04), (0.062, 0.058), (0.058, 0.058), (0.055, 0.042), (0.035, 0.01), (0, 0.01)]
+    cx, cz = 0.02, -0.215
+    out.append(lathe(tig, 'porcelana', 56).xf(t=(cx, 0, cz)))
+    out.append(lathe([(0, 0.045), (0.056, 0.045), (0.045, 0.06), (0, 0.068)], 'arroz', 40, wobble=lambda t, yy: 1 + 0.03 * math.sin(7 * t)).xf(t=(cx, 0, cz)))
+    for _ in range(45):
+        a = r.uniform(0, 6.28); rr = math.sqrt(r.uniform(0, 1)) * 0.048
+        m = ['legume_cenoura', 'legume_milho', 'legume_ervilha', 'azeitona'][r.integers(0, 4)]
+        out.append(box(m).xf((0.006, 0.005, 0.006), (r.uniform(0, 3), r.uniform(0, 3), 0), (cx + rr * math.cos(a), 0.067 - rr * 0.3, cz + rr * math.sin(a))))
+    # ramequim de molho
+    ram = [(0, 0), (0.036, 0), (0.038, 0.004), (0.038, 0.042), (0.034, 0.042), (0.034, 0.008), (0, 0.008)]
+    out.append(lathe(ram, 'porcelana', 48).xf(t=(0.16, 0, -0.2)))
+    out.append(cyl(0.0342, 0.03, 'molho_escuro', 40).xf(t=(0.16, 0.006, -0.2)))
+    # fritas no papel (à esquerda)
+    out.append(box('papel').xf((0.17, 0.002, 0.15), (0, 0.35, 0), (-0.245, 0.001, -0.14)))
+    for _ in range(40):
+        a = r.uniform(0, 6.28); rr = math.sqrt(r.uniform(0, 1)) * 0.055
+        out.append(box('batata').xf((0.009, 0.009, r.uniform(0.05, 0.085)), (r.uniform(-0.2, 0.2), r.uniform(0, 3.14), 0),
+                                    (-0.245 + rr * math.cos(a), 0.007 + r.uniform(0, 0.022), -0.14 + rr * math.sin(a))))
+    return out
+
+def petit_gateau():
+    """Petit gateau com sorvete de creme e calda de chocolate, em prato raso de 26 cm."""
+    r = np.random.default_rng(21)
+    mat('bolo_choc', '#4a2a1c', 0.75); mat('calda_choc', '#2a1208', 0.1)
+    mat('sorvete', '#f3e6c6', 0.55); mat('sorvete_derretido', '#efdcb4', 0.25)
+    p, f = prato(0.13, 0.09, 0.022); out = [p]
+    # bolinho: tronco de cone ~7 cm de base, 5 cm de altura, um pouco irregular
+    cx, cz = 0.045, -0.035
+    bolo = [(0, 0), (0.036, 0), (0.0365, 0.004), (0.031, 0.044), (0.027, 0.05), (0.012, 0.053), (0, 0.053)]
+    out.append(jitter(lathe(bolo, 'bolo_choc', 48, wobble=lambda t, y: 1 + 0.03 * math.sin(5 * t + y * 60)), 0.0009).xf(t=(cx, f, cz)))
+    # calda escorrendo pelo bolinho
+    for k in range(5):
+        a = 1.9 + k * 0.33
+        rr = 0.034 - 0.0
+        out.append(ellip(0.0045, 0.02, 0.003, 'calda_choc', (cx + 0.0335 * math.cos(a), f + 0.027, cz + 0.0335 * math.sin(a)), (0, -a, 0.1), 6, 10))
+    out.append(ellip(0.02, 0.003, 0.016, 'calda_choc', (cx, f + 0.053, cz), la=8, lo=14))
+    # bola de sorvete sobre poça derretida
+    sx, sz = -0.035, 0.015
+    out.append(lathe([(0, 0), (0.07, 0), (0.07, 0.002), (0, 0.003)], 'sorvete_derretido', 48,
+                     wobble=lambda t, y: 1 + 0.14 * math.sin(3 * t) + 0.06 * math.sin(7 * t)).xf((0.85, 1, 0.75), t=(sx + 0.01, f, sz)))
+    out.append(jitter(ellip(0.04, 0.032, 0.038, 'sorvete', (sx, f + 0.03, sz), la=16, lo=24), 0.0012))
+    for k in range(6):  # calda sobre o sorvete
+        a = r.uniform(0, 6.28)
+        out.append(ellip(0.016, 0.003, 0.004, 'calda_choc', (sx + 0.022 * math.cos(a), f + 0.054, sz + 0.022 * math.sin(a)), (0.4, -a, 0), 6, 10))
+    # fio de calda em volta e pingos no prato
+    for k in range(70):
+        a = k / 70 * 2 * math.pi; rr = 0.085 + 0.006 * math.sin(5 * a)
+        if r.uniform() < 0.25: continue
+        out.append(ellip(r.uniform(0.004, 0.008), 0.0012, 0.003, 'calda_choc', (rr * math.cos(a), f + 0.0008, rr * math.sin(a)), (0, -a, 0), 5, 8))
+    for _ in range(30):
+        a = r.uniform(0, 6.28); rr = r.uniform(0.06, 0.11)
+        s = r.uniform(0.002, 0.005)
+        out.append(ellip(s, 0.0012, s, 'calda_choc', (rr * math.cos(a), f + 0.0008, rr * math.sin(a)), la=5, lo=8))
+    return out
+
+PRATOS = dict(petit_gateau=petit_gateau, costelao_12h=costelao, pizza_margherita=pizza, burger_da_casa=burger, picanha_completa=picanha,
               combinado_salmao=sushi, pudim_de_leite=pudim, acai_na_tigela=acai)
 
 if __name__ == '__main__':
     out = sys.argv[1] if len(sys.argv) > 1 else 'site/models'
     os.makedirs(out, exist_ok=True)
+    so = sys.argv[2:]  # opcional: gerar só alguns pratos
     for k, fn in PRATOS.items():
+        if so and k not in so: continue
         dims, size = write_glb(os.path.join(out, k + '.glb'), fn(), k)
         print(f'{k:20s} {dims[0]*100:5.1f} x {dims[1]*100:4.1f} x {dims[2]*100:5.1f} cm   {size/1024:6.0f} KB')

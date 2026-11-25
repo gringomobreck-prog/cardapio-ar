@@ -52,5 +52,6 @@ Se quiser um USDZ feito à mão para o iPhone (melhor qualidade de textura), col
 ## Regenerar os modelos de exemplo
 
 ```bash
-python3 tools/gerar_modelos.py models
+python3 tools/gerar_modelos.py models            # todos
+python3 tools/gerar_modelos.py models costelao_12h  # só um prato
 ```

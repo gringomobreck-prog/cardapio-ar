@@ -55,3 +55,13 @@ Se quiser um USDZ feito à mão para o iPhone (melhor qualidade de textura), col
 python3 tools/gerar_modelos.py models            # todos
 python3 tools/gerar_modelos.py models costelao_12h  # só um prato
 ```
+
+## Modelo 3D real a partir de vídeo (pratos planos, como pizza)
+
+A Pizza 2 Queijos usa a textura real tirada de um vídeo filmado de cima. O script endireita a imagem pelo contorno do prato, recorta o formato exato da pizza e aplica a foto sobre o 3D em escala real:
+
+```bash
+python3 tools/pizza_real.py tools/fontes/pizza_dois_queijos_topo.png models/pizza_dois_queijos.glb 35
+```
+
+O último número é o diâmetro do prato em centímetros. A escala da pizza é calculada a partir dele.

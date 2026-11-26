@@ -433,7 +433,8 @@ def pizza_dois_queijos():
         out.append(box('corte').xf((2 * (R - 0.012), 0.002, 0.0022), (0, a, 0), (0, y + 0.0128, 0)))
     return out
 
-PRATOS = dict(pizza_dois_queijos=pizza_dois_queijos, petit_gateau=petit_gateau, costelao_12h=costelao, pizza_margherita=pizza, burger_da_casa=burger, picanha_completa=picanha,
+# pizza_dois_queijos: o modelo publicado é o real (tools/pizza_real.py); a versão ilustrada fica na função acima.
+PRATOS = dict(petit_gateau=petit_gateau, costelao_12h=costelao, pizza_margherita=pizza, burger_da_casa=burger, picanha_completa=picanha,
               combinado_salmao=sushi, pudim_de_leite=pudim, acai_na_tigela=acai)
 
 if __name__ == '__main__':

@@ -152,7 +152,7 @@ def main(src, dst):
                               foto=('fotos/cais/' + foto.replace('.png', '.webp')) if foto else '', modelo=mid, medida=medida))
         grupo = 'Bebidas' if norm(c['titulo']).startswith(BEBIDAS) else 'Comidas'
         cats.append(dict(id=c['id'], nome=titulo_bonito(c['titulo']), grupo=grupo, itens=itens))
-    json.dump(dict(restaurante='Cais Bar&Restaurante', fonte='dguests.com.br/cardapio/caisbarerestaurante', categorias=cats),
+    json.dump(dict(restaurante='CAIS | Bar & Restaurante', fonte='dguests.com.br/cardapio/caisbarerestaurante', categorias=cats),
               open(dst, 'w'), ensure_ascii=False, separators=(',', ':'))
     for k in sorted(usados): print(k, usados[k])
     print('TOTAL_MODELOS', len(usados), 'ITENS', sum(usados.values()))

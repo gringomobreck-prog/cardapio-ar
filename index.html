@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="logo-cais.png">
 </head>
 <body>
 <title>CAIS Restaurante & Bar</title>
@@ -13,25 +14,27 @@
 <style>
 /* Layout: barra de busca/categorias fixa no topo; lista à esquerda e visualizador (foto / 3D / AR) fixo à direita no desktop */
 :root {
-  /* paleta do logo CAIS: cobre da âncora, grafite metálico e cinza-prata */
-  --bg: #eeefef; --surface: #ffffff; --ink: #26292c; --muted: #62676c;
-  --line: #d5d8da; --accent: #a84f26; --accent-ink: #ffffff; --saffron: #c8642f; --stage: #e2e4e5; --brand: #a84f26;
+  /* paleta tirada do logo CAIS: cobre da âncora (#884b1a), prata quente (#a8a292) e grafite oliva (#322a1a) */
+  --bg: #ebe8e0; --surface: #f8f6f1; --ink: #2b2618; --muted: #6c6656;
+  --line: #d4cfc2; --accent: #884b1a; --accent-ink: #ffffff; --saffron: #ab7045; --stage: #dedad0; --brand: #884b1a;
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #1b1d1f; --surface: #25282b; --ink: #ecedee; --muted: #a4a9ad;
-  --line: #3a3e42; --accent: #e07a45; --accent-ink: #1b1d1f; --saffron: #e8955f; --stage: #2d3135; --brand: #e58a58; color-scheme: dark } }
+  --bg: #1e1a12; --surface: #2a2519; --ink: #ede9de; --muted: #a8a292;
+  --line: #443e2f; --accent: #c47a45; --accent-ink: #1e1a12; --saffron: #d08a55; --stage: #343023; --brand: #cf8a55; color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #1b1d1f; --surface: #25282b; --ink: #ecedee; --muted: #a4a9ad;
-  --line: #3a3e42; --accent: #e07a45; --accent-ink: #1b1d1f; --saffron: #e8955f; --stage: #2d3135; --brand: #e58a58; color-scheme: dark }
+  --bg: #1e1a12; --surface: #2a2519; --ink: #ede9de; --muted: #a8a292;
+  --line: #443e2f; --accent: #c47a45; --accent-ink: #1e1a12; --saffron: #d08a55; --stage: #343023; --brand: #cf8a55; color-scheme: dark }
 
 * { box-sizing: border-box }
 body { background: var(--bg); color: var(--ink); font: 400 16px/1.5 var(--body); margin: 0 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg) }
 .wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 48px }
 header { display: flex; align-items: end; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 14px }
+.brand { display: flex; gap: 14px; align-items: center; min-width: 0 }
+.brand .logo { width: auto; height: clamp(56px, 9vw, 72px); border-radius: 10px; flex: none; box-shadow: 0 2px 8px rgb(0 0 0 / .18) }
 .brand h1 { font: 700 clamp(30px, 5vw, 42px)/1 var(--display); margin: 0; letter-spacing: 0.02em; color: var(--brand) }
 .brand h1 .sub { font: 500 clamp(14px, 2.4vw, 18px)/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-left: 6px; white-space: nowrap }
 .brand p { margin: 6px 0 0; color: var(--muted) }
@@ -96,8 +99,11 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted) }
 <div class="wrap">
   <header>
     <div class="brand">
+      <img class="logo" src="logo-cais.png" alt="Logo do CAIS" width="99" height="117">
+      <div>
       <h1>CAIS <span class="sub">restaurante &amp; bar</span></h1>
       <p>Veja cada prato e bebida em 3D, no tamanho real, em cima da sua mesa.</p>
+      </div>
     </div>
     <span class="mesa" id="mesa">Mesa 12</span>
   </header>

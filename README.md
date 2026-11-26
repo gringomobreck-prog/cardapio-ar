@@ -1,67 +1,43 @@
-# Cardápio em Realidade Aumentada
+# Cardápio CAIS em Realidade Aumentada
 
-Cardápio web em que cada prato aparece em 3D e pode ser colocado **em tamanho real** na mesa pela câmera do celular. Não precisa instalar app.
+Cardápio do **CAIS restaurante & bar** em que cada prato e bebida aparece em 3D e pode ser colocado **em tamanho real** na mesa pela câmera do celular. Não precisa instalar app.
+
+Endereço: https://gringomobreck-prog.github.io/cardapio-ar/ (QR code em `qrcode-mesa.png`).
 
 | Aparelho | Como o AR abre |
 |---|---|
 | Android com ARCore (Chrome) | WebXR ou Google Scene Viewer |
-| iPhone / iPad (Safari) | AR Quick Look (o USDZ é gerado automaticamente a partir do GLB) |
-| Computador | Só o visualizador 3D (girar e dar zoom) |
+| iPhone / iPad (Safari) | AR Quick Look |
+| Computador | Só o visualizador 3D |
 
-O que garante o tamanho real: os modelos estão em metros, e a página usa `ar-scale="fixed"`, que impede o cliente de redimensionar o prato no AR. `ar-placement="floor"` posiciona o prato em superfícies horizontais, como a mesa.
-
-## Estrutura
+## O que tem aqui
 
 ```
-site/
-  index.html            página pronta para publicar
-  models/*.glb          um modelo 3D por prato (escala 1:1, em metros)
-menu.html               a mesma página, sem o <html>/<head> (versão usada no preview)
-tools/gerar_modelos.py  gera os GLB de exemplo de forma procedural (Python + numpy)
+index.html                     página do cardápio
+cardapio.json                  353 itens em 45 categorias (gerado a partir do dguests)
+fotos/cais/*.webp              fotos dos itens
+models/cais/*.glb              108 modelos 3D em escala 1:1 (um por tipo de item)
+dados/dguests_*.json           cópia dos dados do cardápio no dguests
+tools/montar_cardapio_cais.py  monta cardapio.json e escolhe o modelo 3D de cada item
+tools/modelos_cais.py          gera os modelos 3D
 ```
 
-## Publicar
+**Bebidas** usam as medidas reais (lata 350 ml = 12,2 cm, long neck 330 ml, garrafa 600 ml, dose 50 ml, garrafas de vinho, etc.).
+**Pratos** são ilustrativos, no tamanho do prato, tábua, cestinha ou cumbuca em que são servidos. Para ter o prato real em 3D, escaneie com Polycam/RealityScan, exporte em GLB e troque o arquivo em `models/cais/`.
 
-A câmera/AR só funciona em **HTTPS**. Suba esta pasta em qualquer hospedagem estática, por exemplo GitHub Pages, Netlify, Vercel ou Cloudflare Pages.
+## Atualizar o cardápio
 
-Para testar no computador:
+1. Baixe de novo os dados do dguests para `dados/dguests_caisbarerestaurante.json`.
+2. Rode:
 
 ```bash
-python3 -m http.server 8000
+python3 tools/montar_cardapio_cais.py dados/dguests_caisbarerestaurante.json cardapio.json
 ```
 
-## QR code nas mesas
-
-Cada prato tem um link direto pelo `#`, por exemplo `https://seusite.com/#pizza-margherita`. Imprima um QR code com o endereço do cardápio em cada mesa.
-
-## Trocar pelos pratos reais
-
-Os modelos incluídos são ilustrações procedurais, feitas para demonstrar a escala. Para o cardápio de verdade:
-
-1. **Fotogrametria do prato real**: fotografe o prato de todos os ângulos (cerca de 40 a 80 fotos) e gere o modelo com **Polycam**, **Luma AI**, **RealityScan** ou **Apple Object Capture** (Reality Composer no iPhone). Exporte em **GLB**.
-2. **Confira a escala**: o modelo precisa estar em metros (uma pizza de 35 cm tem 0.35 de largura). Dá para ajustar no Blender (`Scale`, depois `Apply > Scale`).
-3. **Deixe leve**: tente ficar abaixo de 3 a 5 MB por prato (por exemplo com `npx @gltf-transform/cli optimize prato.glb prato-otim.glb --texture-compress webp`).
-4. Coloque o arquivo em `site/models/` e adicione o prato na lista `PRATOS` do `index.html`:
-
-```js
-{ id: 'nome_do_arquivo', cat: 'Pratos principais', nome: 'Nome', preco: 59, desc: '...', medida: 'prato Ø 28 cm' },
-```
-
-Se quiser um USDZ feito à mão para o iPhone (melhor qualidade de textura), coloque `ios-src="models/prato.usdz"` no `<model-viewer>`.
-
-## Regenerar os modelos de exemplo
+3. O script lista os modelos usados. Gere algum que esteja faltando:
 
 ```bash
-python3 tools/gerar_modelos.py models            # todos
-python3 tools/gerar_modelos.py models costelao_12h  # só um prato
+python3 tools/modelos_cais.py models/cais NOME-DO-MODELO
 ```
 
-## Modelo 3D real a partir de vídeo (pratos planos, como pizza)
-
-A Pizza 2 Queijos usa a textura real tirada de um vídeo filmado de cima. O script endireita a imagem pelo contorno do prato, recorta o formato exato da pizza e aplica a foto sobre o 3D em escala real:
-
-```bash
-python3 tools/pizza_real.py tools/fontes/pizza_dois_queijos_topo.png models/pizza_dois_queijos.glb 35
-```
-
-O último número é o diâmetro do prato em centímetros. A escala da pizza é calculada a partir dele.
+4. Fotos novas vão em `fotos/cais/` com o nome `produto_<id>.webp`.

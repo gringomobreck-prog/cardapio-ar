@@ -9,8 +9,8 @@ rng = np.random.default_rng(7)
 
 # ---------------- materiais ----------------
 MAT = {}
-def mat(name, rgb, rough=0.7, metal=0.0):
-    MAT[name] = dict(name=name, rgb=rgb, rough=rough, metal=metal)
+def mat(name, rgb, rough=0.7, metal=0.0, alpha=1.0):
+    MAT[name] = dict(name=name, rgb=rgb, rough=rough, metal=metal, alpha=alpha)
     return name
 
 def hexrgb(h):
@@ -125,8 +125,10 @@ def write_glb(path, meshes, name):
         I = np.concatenate(I).astype(np.uint32)
         if key not in mi:
             d = MAT[key]; mi[key] = len(mats)
-            mats.append(dict(name=key, pbrMetallicRoughness=dict(
-                baseColorFactor=hexrgb(d['rgb']) + [1.0], roughnessFactor=d['rough'], metallicFactor=d['metal'])))
+            m_ = dict(name=key, pbrMetallicRoughness=dict(
+                baseColorFactor=hexrgb(d['rgb']) + [d.get('alpha', 1.0)], roughnessFactor=d['rough'], metallicFactor=d['metal']))
+            if d.get('alpha', 1.0) < 1: m_['alphaMode'] = 'BLEND'; m_['doubleSided'] = True
+            mats.append(m_)
         prims.append(dict(attributes=dict(POSITION=add(P, 34962, 5126, 'VEC3', True),
                                           NORMAL=add(N, 34962, 5126, 'VEC3')),
                           indices=add(I, 34963, 5125, 'SCALAR'), material=mi[key]))

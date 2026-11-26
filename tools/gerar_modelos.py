@@ -408,7 +408,32 @@ def petit_gateau():
         out.append(ellip(s, 0.0012, s, 'calda_choc', (rr * math.cos(a), f + 0.0008, rr * math.sin(a)), la=5, lo=8))
     return out
 
-PRATOS = dict(petit_gateau=petit_gateau, costelao_12h=costelao, pizza_margherita=pizza, burger_da_casa=burger, picanha_completa=picanha,
+def pizza_dois_queijos():
+    """Pizza 2 queijos de 35 cm, gratinada e cortada em 8 fatias, sobre tábua redonda."""
+    r = np.random.default_rng(35)
+    mat('massa', '#d9a35b', 0.8); mat('borda_tostada', '#8a5222', 0.85)
+    mat('queijo_base', '#f2dfa8', 0.4); mat('gratinado', '#c9852f', 0.5); mat('gratinado_escuro', '#9a5a1e', 0.55)
+    mat('corte', '#b08a4a', 0.7)
+    out = [tabua_redonda(0.19, 0.016)]
+    y = 0.016; R = 0.165
+    out.append(lathe([(0, 0), (R, 0), (R + 0.01, 0.008), (R + 0.006, 0.021), (R - 0.008, 0.019), (R - 0.014, 0.009), (0, 0.007)],
+                     'massa', 96, wobble=lambda t, yy: 1 + 0.01 * math.sin(6 * t) + 0.005 * math.sin(17 * t)).xf(t=(0, y, 0)))
+    # camada de queijo derretido cobrindo quase até a borda
+    out.append(lathe([(0, 0.007), (R - 0.011, 0.007), (R - 0.009, 0.0105), (R - 0.02, 0.0125), (0, 0.0125)], 'queijo_base', 96,
+                     wobble=lambda t, yy: 1 + 0.012 * math.sin(11 * t)).xf(t=(0, y, 0)))
+    for _ in range(30):  # tostado da borda
+        a = r.uniform(0, 2 * math.pi); rr = R + 0.002
+        out.append(ellip(0.008, 0.002, 0.005, 'borda_tostada', (rr * math.cos(a), y + 0.02, rr * math.sin(a)), (0, -a, 0)))
+    for _ in range(190):  # pintinhas gratinadas
+        a = r.uniform(0, 2 * math.pi); rr = math.sqrt(r.uniform(0, 1)) * (R - 0.02)
+        sz = r.uniform(0.002, 0.006); m = 'gratinado' if r.uniform() < 0.75 else 'gratinado_escuro'
+        out.append(ellip(sz, 0.0009, sz * r.uniform(0.6, 1), m, (rr * math.cos(a), y + 0.0127, rr * math.sin(a)), (0, r.uniform(0, 3), 0), 5, 8))
+    for k in range(4):  # cortes das 8 fatias
+        a = k * math.pi / 4
+        out.append(box('corte').xf((2 * (R - 0.012), 0.002, 0.0022), (0, a, 0), (0, y + 0.0128, 0)))
+    return out
+
+PRATOS = dict(pizza_dois_queijos=pizza_dois_queijos, petit_gateau=petit_gateau, costelao_12h=costelao, pizza_margherita=pizza, burger_da_casa=burger, picanha_completa=picanha,
               combinado_salmao=sushi, pudim_de_leite=pudim, acai_na_tigela=acai)
 
 if __name__ == '__main__':

@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="icon" href="logo-cais.png">
+<meta http-equiv="Cache-Control" content="no-cache">
+<link rel="icon" href="logo-cais.png?v=2">
 </head>
 <body>
 <title>CAIS Restaurante & Bar</title>
@@ -18,7 +19,7 @@
   /* fundo: padrão de âncoras do CAIS em bege (#f1e6d3, âncora #e2d1b5) */
   --bg: #f1e6d3; --surface: #fbf6ec; --ink: #2b2618; --muted: #685f4e;
   --line: #dccbb0; --accent: #884b1a; --accent-ink: #ffffff; --saffron: #ab7045; --stage: #ede2cd; --brand: #884b1a;
-  --fundo: url("fundo-ancoras.png");
+  --fundo: url("fundo-bege.png?v=2");
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
@@ -26,11 +27,11 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #1e1a12; --surface: #2a2519; --ink: #ede9de; --muted: #a8a292;
   --line: #443e2f; --accent: #c47a45; --accent-ink: #1e1a12; --saffron: #d08a55; --stage: #343023; --brand: #cf8a55;
-  --fundo: url("fundo-ancoras-escuro.png"); color-scheme: dark } }
+  --fundo: url("fundo-ancoras-escuro.png?v=2"); color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #1e1a12; --surface: #2a2519; --ink: #ede9de; --muted: #a8a292;
   --line: #443e2f; --accent: #c47a45; --accent-ink: #1e1a12; --saffron: #d08a55; --stage: #343023; --brand: #cf8a55;
-  --fundo: url("fundo-ancoras-escuro.png"); color-scheme: dark }
+  --fundo: url("fundo-ancoras-escuro.png?v=2"); color-scheme: dark }
 
 * { box-sizing: border-box }
 body { background: var(--bg) var(--fundo) repeat; background-size: 62px auto; color: var(--ink); font: 400 16px/1.5 var(--body); margin: 0 }
@@ -104,7 +105,7 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); background: var
 <div class="wrap">
   <header>
     <div class="brand">
-      <img class="logo" src="logo-cais.png" alt="Logo do CAIS" width="99" height="117">
+      <img class="logo" src="logo-cais.png?v=2" alt="Logo do CAIS" width="99" height="117">
       <div>
       <h1>CAIS <span class="sub">restaurante &amp; bar</span></h1>
       <p>Veja cada prato e bebida em 3D, no tamanho real, em cima da sua mesa.</p>
@@ -168,6 +169,7 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); background: var
 </div>
 
 <script>
+const VERSAO = '3'; // aumente a cada atualização do cardápio
 const mv = document.getElementById('mv');
 const brl = v => v == null ? 'Consulte' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 let DADOS = null, ITENS = [], grupo = 'Comidas', busca = '', atual = null;
@@ -267,7 +269,7 @@ customElements.whenDefined('model-viewer').then(() => setTimeout(() => {
   if (!mv.canActivateAR) document.getElementById('hint').innerHTML = '<strong>Realidade aumentada:</strong> abra pelo celular (Android com ARCore ou iPhone/iPad) para ver o item na mesa. Aqui você pode girar e dar zoom no modelo 3D.';
 }, 800));
 
-fetch('cardapio.json').then(r => r.json()).then(d => {
+fetch('cardapio.json?v=' + VERSAO, { cache: 'no-cache' }).then(r => r.json()).then(d => {
   DADOS = d;
   ITENS = d.categorias.flatMap(c => c.itens.map(it => Object.assign({ cat: c.nome, grupo: c.grupo }, it)));
   const m = location.hash.match(/^#item-(\d+)$/);

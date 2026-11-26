@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
 <meta http-equiv="Cache-Control" content="no-cache">
 <link rel="icon" href="logo-cais.png?v=2">
 </head>
@@ -24,15 +25,9 @@
   --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #1e1a12; --surface: #2a2519; --ink: #ede9de; --muted: #a8a292;
-  --line: #443e2f; --accent: #c47a45; --accent-ink: #1e1a12; --saffron: #d08a55; --stage: #343023; --brand: #cf8a55;
-  --fundo: url("fundo-ancoras-escuro.png?v=2"); color-scheme: dark } }
-:root[data-theme="dark"] {
-  --bg: #1e1a12; --surface: #2a2519; --ink: #ede9de; --muted: #a8a292;
-  --line: #443e2f; --accent: #c47a45; --accent-ink: #1e1a12; --saffron: #d08a55; --stage: #343023; --brand: #cf8a55;
-  --fundo: url("fundo-ancoras-escuro.png?v=2"); color-scheme: dark }
 
+:root { color-scheme: light } /* tema único: bege do Cais, igual no modo claro e no escuro */
+[hidden] { display: none !important }
 * { box-sizing: border-box }
 body { background: var(--bg) var(--fundo) repeat; background-size: 62px auto; color: var(--ink); font: 400 16px/1.5 var(--body); margin: 0 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg) }

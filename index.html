@@ -97,8 +97,18 @@ model-viewer { width: 100%; height: clamp(300px, 50vh, 500px); background: radia
 .hint { font-size: 13px; color: var(--muted); border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 10px }
 .hint strong { color: var(--ink) }
 
-.cat { display: table; font: 600 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; margin: 22px 0 8px; scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 160px) }
-.cat:first-child { margin-top: 4px }
+.cat { display: flex; align-items: center; gap: 10px; margin: 30px 0 12px; scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 170px) }
+.cat:first-child { margin-top: 6px }
+.cat .rot { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; background: linear-gradient(135deg, #9c5a26, var(--brand) 55%, #6e3c14); color: #fff; font: 700 15px/1.1 var(--display); letter-spacing: .06em; text-transform: uppercase; padding: 9px 16px 9px 11px; border-radius: 999px; box-shadow: 0 5px 14px rgb(136 75 26 / .32), inset 0 1px 0 rgb(255 255 255 / .18) }
+.cat .rot svg { width: 18px; height: 18px; flex: none }
+@media (max-width: 480px) { .cat .rot { font-size: 13px; letter-spacing: .04em; padding: 8px 12px 8px 10px } }
+.cat .qtd { font: 600 11px/1 var(--mono); letter-spacing: 0; background: rgb(255 255 255 / .2); border-radius: 999px; padding: 4px 7px; margin-left: 2px; white-space: nowrap }
+.cat::after { content: ""; flex: 1; min-width: 24px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--brand), rgb(136 75 26 / 0)) }
+.cat.entra .rot { animation: catEntra .45s cubic-bezier(.2, .8, .3, 1.2) both }
+.cat.entra::after { animation: catLinha .6s ease .1s both; transform-origin: left }
+@keyframes catEntra { from { transform: translateX(-12px) scale(.94); opacity: 0 } to { transform: none; opacity: 1 } }
+@keyframes catLinha { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+@media (prefers-reduced-motion: reduce) { .cat.entra .rot, .cat.entra::after { animation: none } }
 .list { display: grid; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden }
 .list .dish:last-child { border-bottom: 0 }
 .dish { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: start; gap: 3px 14px; padding: 12px 12px; border: 0; border-bottom: 1px solid var(--line); background: none; color: inherit; text-align: left; font: inherit; cursor: pointer }
@@ -227,7 +237,7 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); background: var
 <script>
 const VERSAO = '3'; // aumente a cada atualização do cardápio
 // Atualização automática: se houver versão mais nova publicada, recarrega a página nela (evita cache antigo)
-const BUILD = '202611270239';
+const BUILD = '202611270241';
 fetch('versao.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (!v || v === BUILD) return;
@@ -290,6 +300,10 @@ function selecionar(id, rolar) {
   if (rolar && innerWidth < 960) document.querySelector('.stage-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// Títulos das categorias animam ao entrar na tela
+const obsCat = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('entra'); obsCat.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' }) : null;
+function observarCat(h) { if (obsCat) obsCat.observe(h); else h.classList.add('entra'); }
+
 function render() {
   const menu = document.getElementById('menu'); const chips = document.getElementById('chips');
   menu.innerHTML = ''; chips.innerHTML = '';
@@ -300,7 +314,12 @@ function render() {
     const itens = c.itens.filter(it => !q || sem(it.nome + ' ' + it.desc + ' ' + c.nome).includes(q));
     if (!itens.length) return;
     total += itens.length;
-    const h = document.createElement('h3'); h.className = 'cat'; h.id = 'cat-' + c.id; h.textContent = c.nome; menu.appendChild(h);
+    const h = document.createElement('h3'); h.className = 'cat'; h.id = 'cat-' + c.id;
+    const rot = document.createElement('span'); rot.className = 'rot';
+    rot.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M12 6.5V21M7.5 10h9M4 14c0 4 3.6 7 8 7s8-3 8-7"/><path d="M4 14l-1.5 1.5M4 14l1.5 1.5M20 14l-1.5 1.5M20 14l1.5 1.5"/></svg>';
+    const nm = document.createElement('span'); nm.textContent = c.nome;
+    const qt = document.createElement('span'); qt.className = 'qtd'; qt.textContent = itens.length + (itens.length === 1 ? ' item' : ' itens');
+    rot.append(nm, qt); h.appendChild(rot); menu.appendChild(h); observarCat(h);
     const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'chip'; chip.textContent = c.nome; chip.dataset.cat = 'cat-' + c.id;
     chip.onclick = () => { travaSpy = Date.now() + 900; marcarChip(chip.dataset.cat); h.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     chips.appendChild(chip);

@@ -215,6 +215,16 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); background: var
 
 <script>
 const VERSAO = '3'; // aumente a cada atualização do cardápio
+// Atualização automática: se houver versão mais nova publicada, recarrega a página nela (evita cache antigo)
+const BUILD = '202611270235';
+fetch('versao.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
+  v = (v || '').trim();
+  if (!v || v === BUILD) return;
+  let ja = ''; try { ja = sessionStorage.getItem('cais-recarregou') || ''; } catch (e) {}
+  if (ja === v) return;
+  try { sessionStorage.setItem('cais-recarregou', v); } catch (e) {}
+  location.replace(location.pathname + '?v=' + v + location.hash);
+}).catch(() => {});
 // WhatsApp do restaurante: só números, com DDI 55 e DDD (ex.: '5585999999999'). Vazio = botão escondido.
 const WHATSAPP = '';
 {

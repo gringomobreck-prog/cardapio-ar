@@ -108,27 +108,27 @@ model-viewer { width: 100%; height: clamp(300px, 50vh, 500px); background: radia
 :focus-visible { outline: 3px solid var(--saffron); outline-offset: 2px }
 footer { margin-top: 28px; font-size: 13px; color: var(--muted); background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px }
 
-/* botões flutuantes de contato */
-.social { position: fixed; z-index: 20; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 12px }
-.social a { position: relative; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; color: #fff; text-decoration: none; box-shadow: 0 6px 18px rgb(0 0 0 / .25); transition: transform .2s cubic-bezier(.2, .8, .3, 1.3), box-shadow .2s ease; animation: entra .5s cubic-bezier(.2, .8, .3, 1.2) both }
+/* botões de contato no topo, antes da frase */
+.contato { display: flex; align-items: center; gap: 8px; margin-top: 8px }
+.contato p { margin: 0 0 0 4px; color: var(--muted); min-width: 0; flex: 1 1 0 }
+@media (max-width: 600px) { .contato p { font-size: 14px; line-height: 1.35 } }
+.social { display: flex; gap: 8px; flex: none }
+.social a { position: relative; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: #fff; text-decoration: none; box-shadow: 0 3px 10px rgb(0 0 0 / .2); transition: transform .2s cubic-bezier(.2, .8, .3, 1.3), box-shadow .2s ease; animation: entra .5s cubic-bezier(.2, .8, .3, 1.2) both }
 .social a:nth-child(2) { animation-delay: .12s }
-.social svg { width: 30px; height: 30px; position: relative; z-index: 1 }
+.social svg { width: 22px; height: 22px; position: relative; z-index: 1 }
 .social .wpp { background: #25d366 }
 .social .insta { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%) }
 .social .wpp::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #25d366; animation: pulso 2.2s ease-out infinite }
-.social .rotulo { position: absolute; right: 66px; top: 50%; transform: translateY(-50%) translateX(6px); background: var(--ink); color: var(--bg); font: 600 13px/1 var(--body); padding: 8px 10px; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease }
+.social .rotulo { position: absolute; left: 50%; top: calc(100% + 8px); transform: translateX(-50%) translateY(-4px); background: var(--ink); color: var(--bg); font: 600 12px/1 var(--body); padding: 7px 9px; border-radius: 7px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 30 }
 @media (hover: hover) {
-  .social a:hover { transform: translateY(-3px) scale(1.08); box-shadow: 0 10px 24px rgb(0 0 0 / .3) }
-  .social a:hover .rotulo { opacity: 1; transform: translateY(-50%) translateX(0) }
-  .social .insta:hover svg { animation: gira .6s ease }
+  .social a:hover { transform: translateY(-3px) scale(1.1); box-shadow: 0 8px 18px rgb(0 0 0 / .28) }
+  .social a:hover .rotulo { opacity: 1; transform: translateX(-50%) translateY(0) }
+  .social .insta:hover svg, .social .wpp:hover svg { animation: gira .6s ease }
 }
-.social a:active { transform: scale(.94) }
-@keyframes pulso { 0% { transform: scale(1); opacity: .55 } 100% { transform: scale(1.7); opacity: 0 } }
-@keyframes entra { from { transform: translateY(20px) scale(.6); opacity: 0 } to { transform: none; opacity: 1 } }
-@keyframes gira { 0% { transform: rotate(0) } 40% { transform: rotate(-14deg) scale(1.1) } 100% { transform: rotate(0) } }
-@media (max-width: 600px) { .social { gap: 10px } .social a { width: 50px; height: 50px } .social svg { width: 27px; height: 27px } }
-footer { margin-bottom: 140px }
-@media (min-width: 960px) { footer { margin-bottom: 0 } }
+.social a:active { transform: scale(.92) }
+@keyframes pulso { 0% { transform: scale(1); opacity: .55 } 100% { transform: scale(1.75); opacity: 0 } }
+@keyframes entra { from { transform: translateY(8px) scale(.6); opacity: 0 } to { transform: none; opacity: 1 } }
+@keyframes gira { 0% { transform: rotate(0) } 40% { transform: rotate(-14deg) scale(1.12) } 100% { transform: rotate(0) } }
 @media (prefers-reduced-motion: reduce) { .social a, .social a::before, .social svg { animation: none !important } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important } .chip:hover, .dish:hover img { transform: none !important } }
 </style>
@@ -139,7 +139,19 @@ footer { margin-bottom: 140px }
       <img class="logo" src="logo-cais.png?v=2" alt="Logo do CAIS | Bar &amp; Restaurante" width="99" height="117">
       <div>
       <h1>CAIS <span class="sub"><span class="barra" aria-hidden="true">|</span> Bar &amp; Restaurante</span></h1>
-      <p>Veja cada prato e bebida em 3D, no tamanho real, em cima da sua mesa.</p>
+      <div class="contato">
+        <nav class="social" aria-label="Fale com o CAIS">
+          <a class="wpp" id="btnWpp" target="_blank" rel="noopener" aria-label="Chamar no WhatsApp">
+            <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 3C9 3 3.3 8.6 3.3 15.6c0 2.4.7 4.7 1.9 6.7L3 29l6.9-2.2c1.9 1 4 1.6 6.1 1.6 7 0 12.7-5.7 12.7-12.7S23 3 16 3zm0 23.1c-2 0-3.9-.6-5.6-1.6l-.4-.2-4.1 1.3 1.3-4-.3-.4c-1.1-1.7-1.7-3.7-1.7-5.7C5.2 9.8 10 5.1 16 5.1s10.8 4.7 10.8 10.6S21.9 26.1 16 26.1zm5.9-7.9c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1c-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2s0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6-.1-.2-.7-1.7-1-2.4-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.1-1.2 2.7 1.2 3.2 1.4 3.4c.2.2 2.3 3.6 5.7 5 .8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5s.3-1.4.2-1.5c-.1-.2-.3-.3-.6-.4z"/></svg>
+            <span class="rotulo">Fale no WhatsApp</span>
+          </a>
+          <a class="insta" id="btnInsta" href="https://www.instagram.com/caisbarerestaurante/" target="_blank" rel="noopener" aria-label="Instagram do CAIS">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><rect x="5" y="5" width="22" height="22" rx="6.5"/><circle cx="16" cy="16" r="5.2"/><circle cx="22.6" cy="9.4" r="1.4" fill="currentColor" stroke="none"/></svg>
+            <span class="rotulo">@caisbarerestaurante</span>
+          </a>
+        </nav>
+        <p>Veja cada prato e bebida em 3D, no tamanho real, em cima da sua mesa.</p>
+      </div>
       </div>
     </div>
     <span class="mesa" id="mesa">Mesa 12</span>
@@ -199,25 +211,15 @@ footer { margin-bottom: 140px }
   <footer>Cardápio do CAIS | Bar &amp; Restaurante. Modelos 3D em escala 1:1: bebidas nas medidas reais das embalagens e copos; pratos ilustrativos no tamanho do prato, tábua ou cumbuca em que são servidos.</footer>
 </div>
 
-<nav class="social" aria-label="Fale com o CAIS">
-  <a class="wpp" id="btnWpp" hidden target="_blank" rel="noopener" aria-label="Chamar no WhatsApp">
-    <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 3C9 3 3.3 8.6 3.3 15.6c0 2.4.7 4.7 1.9 6.7L3 29l6.9-2.2c1.9 1 4 1.6 6.1 1.6 7 0 12.7-5.7 12.7-12.7S23 3 16 3zm0 23.1c-2 0-3.9-.6-5.6-1.6l-.4-.2-4.1 1.3 1.3-4-.3-.4c-1.1-1.7-1.7-3.7-1.7-5.7C5.2 9.8 10 5.1 16 5.1s10.8 4.7 10.8 10.6S21.9 26.1 16 26.1zm5.9-7.9c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1c-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2s0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6-.1-.2-.7-1.7-1-2.4-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.1-1.2 2.7 1.2 3.2 1.4 3.4c.2.2 2.3 3.6 5.7 5 .8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5s.3-1.4.2-1.5c-.1-.2-.3-.3-.6-.4z"/></svg>
-    <span class="rotulo">Fale no WhatsApp</span>
-  </a>
-  <a class="insta" id="btnInsta" href="https://www.instagram.com/caisbarerestaurante/" target="_blank" rel="noopener" aria-label="Instagram do CAIS">
-    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><rect x="5" y="5" width="22" height="22" rx="6.5"/><circle cx="16" cy="16" r="5.2"/><circle cx="22.6" cy="9.4" r="1.4" fill="currentColor" stroke="none"/></svg>
-    <span class="rotulo">@caisbarerestaurante</span>
-  </a>
-</nav>
 
 <script>
 const VERSAO = '3'; // aumente a cada atualização do cardápio
 // WhatsApp do restaurante: só números, com DDI 55 e DDD (ex.: '5585999999999'). Vazio = botão escondido.
 const WHATSAPP = '';
-if (WHATSAPP) {
+{
   const w = document.getElementById('btnWpp');
-  w.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Olá! Vim pelo cardápio digital do CAIS.');
-  w.hidden = false;
+  if (WHATSAPP) w.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Olá! Vim pelo cardápio digital do CAIS.');
+  else { w.setAttribute('aria-disabled', 'true'); w.querySelector('.rotulo').textContent = 'WhatsApp em breve'; w.addEventListener('click', ev => ev.preventDefault()); }
 }
 const mv = document.getElementById('mv');
 const brl = v => v == null ? 'Consulte' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

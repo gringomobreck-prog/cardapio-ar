@@ -280,8 +280,8 @@ function render() {
     if (!itens.length) return;
     total += itens.length;
     const h = document.createElement('h3'); h.className = 'cat'; h.id = 'cat-' + c.id; h.textContent = c.nome; menu.appendChild(h);
-    const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'chip'; chip.textContent = c.nome;
-    chip.onclick = () => { h.scrollIntoView({ behavior: 'smooth', block: 'start' }); chips.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-current', String(x === chip))); };
+    const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'chip'; chip.textContent = c.nome; chip.dataset.cat = 'cat-' + c.id;
+    chip.onclick = () => { travaSpy = Date.now() + 900; marcarChip(chip.dataset.cat); h.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     chips.appendChild(chip);
     const l = document.createElement('div'); l.className = 'list'; menu.appendChild(l);
     itens.forEach(it => {
@@ -298,7 +298,33 @@ function render() {
     });
   });
   if (!total) menu.innerHTML = '<p class="vazio">Nenhum item encontrado. Tente outra palavra.</p>';
+  catAtual = null; acompanhar();
 }
+
+// Categorias acompanham a rolagem: acende o botão da categoria que está na tela e desliza a faixa até ele
+let catAtual = null, travaSpy = 0, agendado = false;
+function marcarChip(id) {
+  if (id === catAtual) return; catAtual = id;
+  const chips = document.getElementById('chips'); let alvo = null;
+  chips.querySelectorAll('.chip').forEach(x => { const on = x.dataset.cat === id; x.setAttribute('aria-current', String(on)); if (on) alvo = x; });
+  if (alvo) {
+    const r = alvo.getBoundingClientRect(), rc = chips.getBoundingClientRect();
+    const esq = chips.scrollLeft + (r.left - rc.left) - (rc.width - r.width) / 2;
+    chips.scrollTo({ left: Math.max(0, esq), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
+}
+function acompanhar() {
+  if (Date.now() < travaSpy) return;
+  const titulos = document.querySelectorAll('#menu .cat'); if (!titulos.length) return;
+  const topo = document.querySelector('.toolbar').getBoundingClientRect().bottom;
+  const limite = topo + (innerHeight - topo) * 0.3;
+  let atualH = titulos[0];
+  for (const h of titulos) { if (h.getBoundingClientRect().top <= limite) atualH = h; else break; }
+  if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) atualH = titulos[titulos.length - 1];
+  marcarChip(atualH.id);
+}
+addEventListener('scroll', () => { if (agendado) return; agendado = true; requestAnimationFrame(() => { agendado = false; acompanhar(); }); }, { passive: true });
+addEventListener('resize', () => { catAtual = null; acompanhar(); });
 
 function setGrupo(g) {
   grupo = g;

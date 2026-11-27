@@ -82,7 +82,9 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .view-toggle button:disabled { opacity: .4; cursor: default }
 .stage { position: relative; margin-top: 12px }
 #fotoBox { position: relative }
-.photo { display: block; width: 100%; height: clamp(300px, 50vh, 500px); object-fit: contain; background: var(--stage) }
+.photo { display: block; width: 100%; height: clamp(300px, 50vh, 500px); object-fit: contain; background: var(--stage); transition: opacity .3s ease, transform .4s ease }
+.photo.trocando { opacity: 0; transform: scale(.97) }
+@media (prefers-reduced-motion: reduce) { .photo { transition: none } .photo.trocando { transform: none } }
 model-viewer { width: 100%; height: clamp(300px, 50vh, 500px); background: radial-gradient(circle at 50% 70%, var(--surface), var(--stage) 75%); --poster-color: transparent; --progress-bar-color: var(--accent) }
 .ar-btn { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); border: 0; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font: 600 16px/1 var(--body); padding: 14px 22px; display: flex; gap: 10px; align-items: center; box-shadow: 0 6px 20px rgb(0 0 0 / .18); cursor: pointer; white-space: nowrap }
 .ar-btn svg { width: 20px; height: 20px }
@@ -237,7 +239,7 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); background: var
 <script>
 const VERSAO = '3'; // aumente a cada atualização do cardápio
 // Atualização automática: se houver versão mais nova publicada, recarrega a página nela (evita cache antigo)
-const BUILD = '202611270241';
+const BUILD = '202611270247';
 fetch('versao.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (!v || v === BUILD) return;
@@ -282,7 +284,12 @@ function selecionar(id, rolar) {
   const it = ITENS.find(x => x.id === id); if (!it) return;
   atual = id;
   const img = document.getElementById('foto');
-  if (it.foto) { img.src = it.foto; img.alt = 'Foto: ' + it.nome; }
+  if (it.foto && img.getAttribute('src') !== it.foto) {
+    img.classList.add('trocando');
+    const pre = new Image();
+    pre.onload = pre.onerror = () => { if (atual !== id) return; img.src = it.foto; img.alt = 'Foto: ' + it.nome; requestAnimationFrame(() => img.classList.remove('trocando')); };
+    pre.src = it.foto;
+  }
   document.getElementById('vFoto').disabled = !it.foto;
   mostrar(it.foto ? 'foto' : '3d');
   carregarModelo(it.modelo).then(u => { if (atual === id) mv.src = u; });
@@ -321,7 +328,7 @@ function render() {
     const qt = document.createElement('span'); qt.className = 'qtd'; qt.textContent = itens.length + (itens.length === 1 ? ' item' : ' itens');
     rot.append(nm, qt); h.appendChild(rot); menu.appendChild(h); observarCat(h);
     const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'chip'; chip.textContent = c.nome; chip.dataset.cat = 'cat-' + c.id;
-    chip.onclick = () => { travaSpy = Date.now() + 900; marcarChip(chip.dataset.cat); h.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    chip.onclick = () => { travaSpy = Date.now() + 900; marcarChip(chip.dataset.cat, true); h.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     chips.appendChild(chip);
     const l = document.createElement('div'); l.className = 'list'; menu.appendChild(l);
     itens.forEach(it => {
@@ -342,9 +349,21 @@ function render() {
 }
 
 // Categorias acompanham a rolagem: acende o botão da categoria que está na tela e desliza a faixa até ele
-let catAtual = null, travaSpy = 0, agendado = false;
-function marcarChip(id) {
+let catAtual = null, travaSpy = 0, agendado = false, inicioFeito = false;
+// Ao mudar de categoria, o quadro mostra um prato dela (a menos que o cliente já tenha escolhido um dessa categoria)
+function mostrarCategoria(id) {
+  const cid = Number(String(id).replace('cat-', ''));
+  const sel = ITENS.find(x => x.id === atual);
+  if (sel && sel.catId === cid) return;
+  const c = DADOS && DADOS.categorias.find(x => x.id === cid); if (!c) return;
+  const q = sem(busca.trim());
+  const itens = c.itens.filter(it => !q || sem(it.nome + ' ' + it.desc + ' ' + c.nome).includes(q));
+  const it = itens.find(x => x.foto) || itens[0];
+  if (it) selecionar(it.id, false);
+}
+function marcarChip(id, auto) {
   if (id === catAtual) return; catAtual = id;
+  if (auto) mostrarCategoria(id);
   const chips = document.getElementById('chips'); let alvo = null;
   chips.querySelectorAll('.chip').forEach(x => { const on = x.dataset.cat === id; x.setAttribute('aria-current', String(on)); if (on) alvo = x; });
   if (alvo) {
@@ -361,7 +380,7 @@ function acompanhar() {
   let atualH = titulos[0];
   for (const h of titulos) { if (h.getBoundingClientRect().top <= limite) atualH = h; else break; }
   if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) atualH = titulos[titulos.length - 1];
-  marcarChip(atualH.id);
+  marcarChip(atualH.id, inicioFeito);
 }
 addEventListener('scroll', () => { if (agendado) return; agendado = true; requestAnimationFrame(() => { agendado = false; acompanhar(); }); }, { passive: true });
 addEventListener('resize', () => { catAtual = null; acompanhar(); });
@@ -433,10 +452,11 @@ customElements.whenDefined('model-viewer').then(() => setTimeout(() => {
 
 fetch('cardapio.json?v=' + VERSAO, { cache: 'no-cache' }).then(r => r.json()).then(d => {
   DADOS = d;
-  ITENS = d.categorias.flatMap(c => c.itens.map(it => Object.assign({ cat: c.nome, grupo: c.grupo }, it)));
+  ITENS = d.categorias.flatMap(c => c.itens.map(it => Object.assign({ cat: c.nome, catId: c.id, grupo: c.grupo }, it)));
   const m = location.hash.match(/^#item-(\d+)$/);
   const ini = (m && ITENS.find(x => x.id === Number(m[1]))) || ITENS.find(x => x.foto) || ITENS[0];
   grupo = ini.grupo; setGrupo(grupo); selecionar(ini.id, false);
+  inicioFeito = true;
 }).catch(() => { document.getElementById('menu').innerHTML = '<p class="vazio">Não foi possível carregar o cardápio. Verifique a conexão e recarregue a página.</p>'; });
 </script>
 

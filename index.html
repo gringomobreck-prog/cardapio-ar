@@ -49,10 +49,20 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .seg { display: flex; padding: 4px; background: var(--stage); border-radius: 12px; gap: 2px }
 .seg button { border: 0; background: none; color: var(--muted); font: 600 14px/1 var(--body); padding: 10px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgb(0 0 0 / .12) }
-.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px }
+.seg button { transition: color .18s ease, background-color .18s ease }
+.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 4px 2px 8px; margin-block: -4px -6px }
 .chips::-webkit-scrollbar { display: none }
 .chip { flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 7px 12px; font: 500 13px/1 var(--body); cursor: pointer; white-space: nowrap }
+.chip { transition: transform .18s cubic-bezier(.2, .8, .3, 1.2), background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease }
 .chip[aria-current="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink) }
+.chip:active { transform: translateY(0) scale(.96) }
+@media (hover: hover) {
+  .chip:hover { transform: translateY(-2px); background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 5px 12px rgb(136 75 26 / .28) }
+  .chip[aria-current="true"]:hover { background: var(--ink); color: var(--bg); border-color: var(--ink) }
+  .seg button:not([aria-pressed="true"]):hover { color: var(--accent); background: color-mix(in srgb, var(--surface) 55%, transparent) }
+  .dish:hover img { transform: scale(1.06) }
+  .ar-btn:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 10px 24px rgb(136 75 26 / .35) }
+}
 
 .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 14px }
 @media (min-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr) } .stage-col { order: 2 } .stage-card { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 160px) } }
@@ -85,6 +95,8 @@ model-viewer { width: 100%; height: clamp(300px, 50vh, 500px); background: radia
 .list .dish:last-child { border-bottom: 0 }
 .dish { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: start; gap: 3px 14px; padding: 12px 12px; border: 0; border-bottom: 1px solid var(--line); background: none; color: inherit; text-align: left; font: inherit; cursor: pointer }
 .dish:hover { background: var(--stage) }
+.dish { transition: background-color .15s ease } .dish img { transition: transform .25s ease }
+.ar-btn { transition: transform .18s ease, box-shadow .18s ease }
 .dish[aria-current="true"] { background: var(--stage); box-shadow: inset 3px 0 0 var(--saffron) }
 .dish img, .thumb3d { grid-row: 1 / span 2; grid-column: 1; width: 76px; height: 76px; object-fit: cover; border-radius: 12px; background: var(--stage) }
 .thumb3d { display: grid; place-items: center; font: 700 17px/1 var(--display); color: var(--accent) }
@@ -95,7 +107,30 @@ model-viewer { width: 100%; height: clamp(300px, 50vh, 500px); background: radia
 .vazio { padding: 20px; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 16px }
 :focus-visible { outline: 3px solid var(--saffron); outline-offset: 2px }
 footer { margin-top: 28px; font-size: 13px; color: var(--muted); background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px }
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important } }
+
+/* botões flutuantes de contato */
+.social { position: fixed; z-index: 20; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 12px }
+.social a { position: relative; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; color: #fff; text-decoration: none; box-shadow: 0 6px 18px rgb(0 0 0 / .25); transition: transform .2s cubic-bezier(.2, .8, .3, 1.3), box-shadow .2s ease; animation: entra .5s cubic-bezier(.2, .8, .3, 1.2) both }
+.social a:nth-child(2) { animation-delay: .12s }
+.social svg { width: 30px; height: 30px; position: relative; z-index: 1 }
+.social .wpp { background: #25d366 }
+.social .insta { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%) }
+.social .wpp::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #25d366; animation: pulso 2.2s ease-out infinite }
+.social .rotulo { position: absolute; right: 66px; top: 50%; transform: translateY(-50%) translateX(6px); background: var(--ink); color: var(--bg); font: 600 13px/1 var(--body); padding: 8px 10px; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease }
+@media (hover: hover) {
+  .social a:hover { transform: translateY(-3px) scale(1.08); box-shadow: 0 10px 24px rgb(0 0 0 / .3) }
+  .social a:hover .rotulo { opacity: 1; transform: translateY(-50%) translateX(0) }
+  .social .insta:hover svg { animation: gira .6s ease }
+}
+.social a:active { transform: scale(.94) }
+@keyframes pulso { 0% { transform: scale(1); opacity: .55 } 100% { transform: scale(1.7); opacity: 0 } }
+@keyframes entra { from { transform: translateY(20px) scale(.6); opacity: 0 } to { transform: none; opacity: 1 } }
+@keyframes gira { 0% { transform: rotate(0) } 40% { transform: rotate(-14deg) scale(1.1) } 100% { transform: rotate(0) } }
+@media (max-width: 600px) { .social { gap: 10px } .social a { width: 50px; height: 50px } .social svg { width: 27px; height: 27px } }
+footer { margin-bottom: 140px }
+@media (min-width: 960px) { footer { margin-bottom: 0 } }
+@media (prefers-reduced-motion: reduce) { .social a, .social a::before, .social svg { animation: none !important } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important } .chip:hover, .dish:hover img { transform: none !important } }
 </style>
 
 <div class="wrap">
@@ -164,8 +199,26 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); background: var
   <footer>Cardápio do CAIS | Bar &amp; Restaurante. Modelos 3D em escala 1:1: bebidas nas medidas reais das embalagens e copos; pratos ilustrativos no tamanho do prato, tábua ou cumbuca em que são servidos.</footer>
 </div>
 
+<nav class="social" aria-label="Fale com o CAIS">
+  <a class="wpp" id="btnWpp" hidden target="_blank" rel="noopener" aria-label="Chamar no WhatsApp">
+    <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 3C9 3 3.3 8.6 3.3 15.6c0 2.4.7 4.7 1.9 6.7L3 29l6.9-2.2c1.9 1 4 1.6 6.1 1.6 7 0 12.7-5.7 12.7-12.7S23 3 16 3zm0 23.1c-2 0-3.9-.6-5.6-1.6l-.4-.2-4.1 1.3 1.3-4-.3-.4c-1.1-1.7-1.7-3.7-1.7-5.7C5.2 9.8 10 5.1 16 5.1s10.8 4.7 10.8 10.6S21.9 26.1 16 26.1zm5.9-7.9c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1c-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2s0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6-.1-.2-.7-1.7-1-2.4-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.1-1.2 2.7 1.2 3.2 1.4 3.4c.2.2 2.3 3.6 5.7 5 .8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5s.3-1.4.2-1.5c-.1-.2-.3-.3-.6-.4z"/></svg>
+    <span class="rotulo">Fale no WhatsApp</span>
+  </a>
+  <a class="insta" id="btnInsta" href="https://www.instagram.com/caisbarerestaurante/" target="_blank" rel="noopener" aria-label="Instagram do CAIS">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><rect x="5" y="5" width="22" height="22" rx="6.5"/><circle cx="16" cy="16" r="5.2"/><circle cx="22.6" cy="9.4" r="1.4" fill="currentColor" stroke="none"/></svg>
+    <span class="rotulo">@caisbarerestaurante</span>
+  </a>
+</nav>
+
 <script>
 const VERSAO = '3'; // aumente a cada atualização do cardápio
+// WhatsApp do restaurante: só números, com DDI 55 e DDD (ex.: '5585999999999'). Vazio = botão escondido.
+const WHATSAPP = '';
+if (WHATSAPP) {
+  const w = document.getElementById('btnWpp');
+  w.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Olá! Vim pelo cardápio digital do CAIS.');
+  w.hidden = false;
+}
 const mv = document.getElementById('mv');
 const brl = v => v == null ? 'Consulte' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 let DADOS = null, ITENS = [], grupo = 'Comidas', busca = '', atual = null;

@@ -53,16 +53,13 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 4px 2px 8px; margin-block: -4px -6px }
 .chips::-webkit-scrollbar { display: none }
 .chips-wrap { position: relative; min-width: 0 }
-.chips-wrap.mais-dir .chips { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 56px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 56px), transparent) }
-.chips-wrap.mais-esq .chips { -webkit-mask-image: linear-gradient(90deg, transparent, #000 56px); mask-image: linear-gradient(90deg, transparent, #000 56px) }
-.chips-wrap.mais-esq.mais-dir .chips { -webkit-mask-image: linear-gradient(90deg, transparent, #000 56px, #000 calc(100% - 56px), transparent); mask-image: linear-gradient(90deg, transparent, #000 56px, #000 calc(100% - 56px), transparent) }
 .chips.arrastando { cursor: grabbing; user-select: none }
 .chips.arrastando .chip { pointer-events: none }
-.seta { position: absolute; top: 50%; transform: translateY(-55%); z-index: 2; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--accent); display: grid; place-items: center; cursor: pointer; box-shadow: 0 3px 10px rgb(60 40 10 / .18); transition: transform .18s ease, background-color .18s ease, color .18s ease }
-.seta svg { width: 18px; height: 18px }
-.seta.esq { left: -4px } .seta.dir { right: -4px }
-@media (hover: hover) { .seta:hover { background: var(--accent); color: var(--accent-ink); transform: translateY(-55%) scale(1.08) } }
-@media (hover: none) { .seta { display: none } }
+.trilho { position: relative; height: 6px; margin: 6px 4px 0; border-radius: 999px; background: var(--line); cursor: pointer; touch-action: none }
+.trilho::before { content: ""; position: absolute; inset: -8px 0 }
+.polegar { position: absolute; top: 0; left: 0; height: 100%; min-width: 32px; border-radius: 999px; background: var(--accent); opacity: .75; cursor: grab; transition: opacity .18s ease, height .18s ease, top .18s ease }
+.trilho:hover .polegar, .polegar.ativo { opacity: 1; height: 8px; top: -1px }
+.polegar.ativo { cursor: grabbing }
 .chip { flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 7px 12px; font: 500 13px/1 var(--body); cursor: pointer; white-space: nowrap }
 .chip { transition: transform .18s cubic-bezier(.2, .8, .3, 1.2), background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease }
 .chip[aria-current="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink) }
@@ -181,13 +178,8 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); background: var
       </div>
     </div>
     <div class="chips-wrap" id="chipsWrap">
-      <button type="button" class="seta esq" id="setaEsq" aria-label="Ver categorias anteriores" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-      </button>
       <nav class="chips" id="chips" aria-label="Categorias"></nav>
-      <button type="button" class="seta dir" id="setaDir" aria-label="Ver mais categorias" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-      </button>
+      <div class="trilho" id="trilho" aria-hidden="true"><div class="polegar" id="polegar"></div></div>
     </div>
   </div>
 
@@ -235,7 +227,7 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); background: var
 <script>
 const VERSAO = '3'; // aumente a cada atualização do cardápio
 // Atualização automática: se houver versão mais nova publicada, recarrega a página nela (evita cache antigo)
-const BUILD = '202611270237';
+const BUILD = '202611270239';
 fetch('versao.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (!v || v === BUILD) return;
@@ -357,16 +349,30 @@ addEventListener('resize', () => { catAtual = null; acompanhar(); });
 
 // Barra de categorias: setas, rodinha do mouse e arrastar com o mouse
 const chipsEl = document.getElementById('chips'), chipsWrap = document.getElementById('chipsWrap');
-const setaEsq = document.getElementById('setaEsq'), setaDir = document.getElementById('setaDir');
+const trilho = document.getElementById('trilho'), polegar = document.getElementById('polegar');
 function atualizarSetas() {
   const max = chipsEl.scrollWidth - chipsEl.clientWidth;
-  const esq = chipsEl.scrollLeft > 4, dir = chipsEl.scrollLeft < max - 4;
-  setaEsq.hidden = !esq; setaDir.hidden = !dir;
-  chipsWrap.classList.toggle('mais-esq', esq); chipsWrap.classList.toggle('mais-dir', dir);
+  trilho.hidden = max <= 4; if (max <= 4) return;
+  const tw = trilho.clientWidth, pw = Math.max(32, tw * chipsEl.clientWidth / chipsEl.scrollWidth);
+  polegar.style.width = pw + 'px';
+  polegar.style.transform = 'translateX(' + ((tw - pw) * chipsEl.scrollLeft / max) + 'px)';
 }
-const passo = () => Math.max(200, chipsEl.clientWidth * 0.7);
-setaEsq.onclick = () => chipsEl.scrollBy({ left: -passo(), behavior: 'smooth' });
-setaDir.onclick = () => chipsEl.scrollBy({ left: passo(), behavior: 'smooth' });
+function rolarPara(clientX, desloc) {
+  const r = trilho.getBoundingClientRect(), pw = polegar.offsetWidth;
+  const frac = Math.min(1, Math.max(0, (clientX - r.left - desloc) / (r.width - pw)));
+  chipsEl.scrollLeft = frac * (chipsEl.scrollWidth - chipsEl.clientWidth);
+}
+let puxando = null;
+trilho.addEventListener('pointerdown', e => {
+  const pr = polegar.getBoundingClientRect();
+  const dentro = e.clientX >= pr.left && e.clientX <= pr.right;
+  puxando = { desloc: dentro ? e.clientX - pr.left : polegar.offsetWidth / 2 };
+  polegar.classList.add('ativo'); trilho.setPointerCapture(e.pointerId); travaSpy = Date.now() + 100000;
+  rolarPara(e.clientX, puxando.desloc); e.preventDefault();
+});
+trilho.addEventListener('pointermove', e => { if (puxando) rolarPara(e.clientX, puxando.desloc); });
+const soltar = () => { if (!puxando) return; puxando = null; polegar.classList.remove('ativo'); travaSpy = Date.now() + 600; };
+trilho.addEventListener('pointerup', soltar); trilho.addEventListener('pointercancel', soltar);
 chipsEl.addEventListener('scroll', atualizarSetas, { passive: true });
 addEventListener('resize', atualizarSetas);
 chipsEl.addEventListener('wheel', e => {
